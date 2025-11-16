@@ -1,0 +1,389 @@
+<!-- Loading -->
+<div *ngIf="loading" class="loading">
+  <div class="spinner"></div>
+  <p>Cargando landing page...</p>
+</div>
+
+<!-- Error -->
+<div *ngIf="error && !loading" class="error">
+  <div class="error-icon">⚠️</div>
+  <h3>Error al cargar la página</h3>
+  <p>{{ error }}</p>
+  <button class="retry-btn" (click)="loadLanding(landing?.id || 1)">Reintentar</button>
+</div>
+
+<!-- Landing Content -->
+<div *ngIf="landing && !loading" class="landing-container" 
+     [style.background]="landing.fondo_color || '#ffffff'"
+     [style.fontFamily]="landing.fuente_principal || 'Poppins, sans-serif'">
+  
+  <!-- Fondo de imagen general si existe -->
+  <div *ngIf="landing.fondo_imagen_url" class="background-overlay" 
+       [style.backgroundImage]="'url(' + landing.fondo_imagen_url + ')'"></div>
+
+  <!-- Navbar Interno -->
+  <nav class="navbar" [style.background]="landing.main_color || '#21365E'">
+    <div class="nav-container">
+      <div class="nav-brand">
+        <img *ngIf="landing.logo_url" [src]="landing.logo_url" [alt]="landing.nombre_empresa" class="logo">
+        <span class="company-name">{{ landing.nombre_empresa }}</span>
+      </div>
+      
+      <button class="nav-mobile-toggle" (click)="toggleMobileMenu()">
+        <span [class.active]="mobileMenuOpen"></span>
+        <span [class.active]="mobileMenuOpen"></span>
+        <span [class.active]="mobileMenuOpen"></span>
+      </button>
+
+      <div class="nav-links" [class.mobile-open]="mobileMenuOpen">
+        <a *ngIf="landing.show_inicio" (click)="scrollTo('inicio')" class="nav-link">Inicio</a>
+        <a *ngIf="landing.show_descripcion" (click)="scrollTo('descripcion')" class="nav-link">Nosotros</a>
+        <a *ngIf="landing.show_caracteristicas" (click)="scrollTo('caracteristicas')" class="nav-link">Servicios</a>
+        <a *ngIf="landing.show_horarios" (click)="scrollTo('horarios')" class="nav-link">Horarios</a>
+        <a *ngIf="landing.show_productos" (click)="scrollTo('productos')" class="nav-link">Productos</a>
+        <a *ngIf="landing.show_testimonios" (click)="scrollTo('testimonios')" class="nav-link">Testimonios</a>
+        <a *ngIf="landing.show_pagos" (click)="scrollTo('pagos')" class="nav-link">Pagos</a>
+        <a *ngIf="landing.show_galeria" (click)="scrollTo('galeria')" class="nav-link">Galería</a>
+        <a *ngIf="landing.show_contacto" (click)="scrollTo('contacto')" class="nav-link">Contacto</a>
+        <a *ngIf="landing.show_mapa" (click)="scrollTo('mapa')" class="nav-link">Ubicación</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Banner Principal (si existe) -->
+  <div *ngIf="landing.banner_url" class="main-banner">
+    <img [src]="landing.banner_url" [alt]="landing.nombre_empresa + ' - Banner'">
+  </div>
+
+  <!-- Sección INICIO/HERO -->
+  <section *ngIf="landing.show_inicio" id="inicio" class="hero-section">
+    <div class="hero-background" *ngIf="landing.inicio_background_url" 
+         [style.backgroundImage]="'url(' + landing.inicio_background_url + ')'"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">{{ landing.inicio_title || landing.title }}</h1>
+      <h2 class="hero-subtitle">{{ landing.inicio_subtitle || 'Descubre lo que tenemos para ti' }}</h2>
+      <p class="hero-description">{{ landing.inicio_description || landing.title }}</p>
+      <div class="hero-actions">
+        <button class="btn-primary" [style.background]="landing.main_color" (click)="scrollTo('contacto')">
+          Contáctanos
+        </button>
+        <button class="btn-secondary" (click)="scrollTo('descripcion')">Saber Más</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección DESCRIPCIÓN -->
+  <section *ngIf="landing.show_descripcion" id="descripcion" class="section descripcion-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" [style.color]="landing.main_color">
+          {{ landing.descripcion_title || 'Sobre Nosotros' }}
+        </h2>
+        <div class="section-divider" [style.background]="landing.main_color"></div>
+      </div>
+      <div class="descripcion-grid">
+        <div class="descripcion-content">
+          <div class="descripcion-text">
+            <p>{{ landing.descripcion_text || 'Somos una empresa comprometida con la excelencia.' }}</p>
+          </div>          
+        </div>
+        <div class="descripcion-image" *ngIf="landing.descripcion_image_url">
+          <img [src]="landing.descripcion_image_url" alt="Sobre nosotros" class="featured-image">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección CARACTERÍSTICAS/SERVICIOS -->
+  <section *ngIf="landing.show_caracteristicas && landing.caracteristicas_list?.length > 0" 
+           id="caracteristicas" class="section caracteristicas-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" [style.color]="landing.main_color">
+          {{ landing.caracteristicas_title || 'Nuestros Servicios' }}
+        </h2>
+        <p class="section-subtitle">{{ landing.caracteristicas_text || 'Descubre todo lo que podemos hacer por ti' }}</p>
+        <div class="section-divider" [style.background]="landing.main_color"></div>
+      </div>
+      <div class="caracteristicas-grid">
+        <div *ngFor="let carac of landing.caracteristicas_list; let i = index" class="caracteristica-card">
+          <div class="caracteristica-icon" [style.background]="landing.main_color">
+            <span>{{ carac.icono || '⚡' }}</span>
+          </div>
+          <h3>{{ carac.titulo || 'Servicio ' + (i + 1) }}</h3>
+          <p>{{ carac.descripcion || 'Descripción del servicio' }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección HORARIOS -->
+  <section *ngIf="landing.show_horarios && landing.horarios_json?.length > 0" 
+           id="horarios" class="section horarios-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" [style.color]="landing.main_color">
+          {{ landing.horarios_title || 'Horarios de Atención' }}
+        </h2>
+        <div class="section-divider" [style.background]="landing.main_color"></div>
+      </div>
+      <div class="horarios-container">
+        <div *ngFor="let horario of landing.horarios_json" class="horario-item">
+          <div class="horario-icon">🕒</div>
+          <div class="horario-info">
+            <h4>{{ horario.dia }}</h4>
+            <p>{{ horario.horario }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección PRODUCTOS -->
+  <section *ngIf="landing.show_productos && landing.productos_json?.length > 0" 
+           id="productos" class="section productos-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" [style.color]="landing.main_color">
+          {{ landing.productos_title || 'Nuestros Productos' }}
+        </h2>
+        <p class="section-subtitle">{{ landing.productos_descripcion || 'Los mejores productos para tus necesidades' }}</p>
+        <div class="section-divider" [style.background]="landing.main_color"></div>
+      </div>
+      <div class="productos-grid">
+        <div *ngFor="let producto of landing.productos_json" class="producto-card">
+          <div class="producto-image">
+            <img *ngIf="producto.imagen_url" [src]="producto.imagen_url" [alt]="producto.nombre">
+            <div *ngIf="!producto.imagen_url" class="producto-placeholder">🛍️</div>
+          </div>
+          <div class="producto-content">
+            <h3>{{ producto.nombre || 'Producto' }}</h3>
+            <p>{{ producto.descripcion || 'Descripción del producto' }}</p>
+            <div class="producto-footer">
+              <div class="producto-precio">S/ {{ producto.precio || '0.00' }}</div>
+              <button class="btn-buy" [style.background]="landing.main_color">Comprar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección TESTIMONIOS -->
+  <section *ngIf="landing.show_testimonios && landing.testimonios_json?.length > 0" 
+           id="testimonios" class="section testimonios-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" [style.color]="landing.main_color">
+          {{ landing.testimonios_title || 'Lo que Dicen Nuestros Clientes' }}
+        </h2>
+        <div class="section-divider" [style.background]="landing.main_color"></div>
+      </div>
+      <div class="testimonios-grid">
+        <div *ngFor="let testimonio of landing.testimonios_json" class="testimonio-card">
+          <div class="testimonio-content">
+            <div class="quote-icon" [style.color]="landing.main_color">"</div>
+            <p class="testimonio-comentario">{{ testimonio.comentario || 'Excelente servicio y atención al cliente.' }}</p>
+          </div>
+          <div class="testimonio-header">
+            <div class="testimonio-avatar" [style.background]="landing.main_color">
+              <img *ngIf="testimonio.foto_url" [src]="testimonio.foto_url" [alt]="testimonio.nombre">
+              <div *ngIf="!testimonio.foto_url" class="avatar-placeholder">
+                {{ getInitials(testimonio.nombre) }}
+              </div>
+            </div>
+            <div class="testimonio-info">
+              <h4>{{ testimonio.nombre || 'Usuario' }}</h4>
+              <p>{{ testimonio.cargo || 'Cliente' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección MÉTODOS DE PAGO -->
+  <section *ngIf="landing.show_pagos && landing.pagos_metodos?.length > 0" 
+           id="pagos" class="section pagos-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" [style.color]="landing.main_color">
+          {{ landing.pagos_title || 'Métodos de Pago' }}
+        </h2>
+        <p class="section-subtitle">{{ landing.pagos_descripcion || 'Aceptamos diversos medios de pago' }}</p>
+        <div class="section-divider" [style.background]="landing.main_color"></div>
+      </div>
+      <div class="pagos-grid">
+        <div *ngFor="let metodo of landing.pagos_metodos" class="pago-item">
+          <div class="pago-icon">
+            <img *ngIf="metodo.icono_url" [src]="metodo.icono_url" [alt]="metodo.nombre">
+            <div *ngIf="!metodo.icono_url" class="pago-placeholder">💳</div>
+          </div>
+          <p>{{ metodo.nombre }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección GALERÍA -->
+  <section *ngIf="landing.show_galeria && landing.galeria_imagenes?.length > 0" 
+           id="galeria" class="section galeria-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" [style.color]="landing.main_color">
+          {{ landing.galeria_title || 'Nuestra Galería' }}
+        </h2>
+        <div class="section-divider" [style.background]="landing.main_color"></div>
+      </div>
+      <div class="galeria-grid">
+        <div *ngFor="let imagen of landing.galeria_imagenes; let i = index" 
+             class="galeria-item" (click)="openImage(imagen)">
+          <img [src]="imagen" [alt]="'Imagen ' + (i + 1)">
+          <div class="galeria-overlay">
+            <span class="zoom-icon">🔍</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección CONTACTO -->
+  <section *ngIf="landing.show_contacto" id="contacto" class="section contacto-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" [style.color]="landing.main_color">
+          {{ landing.contacto_title || 'Contáctanos' }}
+        </h2>
+        <p class="section-subtitle">{{ landing.contacto_descripcion || 'Estamos aquí para ayudarte' }}</p>
+        <div class="section-divider" [style.background]="landing.main_color"></div>
+      </div>
+      <div class="contacto-grid">
+        <div class="contacto-info">
+          <div class="contacto-item" *ngIf="landing.contacto_telefono">
+            <div class="contacto-icon" [style.background]="landing.main_color">📞</div>
+            <div class="contacto-details">
+              <strong>Teléfono</strong>
+              <a [href]="'tel:' + landing.contacto_telefono">{{ landing.contacto_telefono }}</a>
+            </div>
+          </div>
+          <div class="contacto-item" *ngIf="landing.contacto_email">
+            <div class="contacto-icon" [style.background]="landing.main_color">✉️</div>
+            <div class="contacto-details">
+              <strong>Email</strong>
+              <a [href]="'mailto:' + landing.contacto_email">{{ landing.contacto_email }}</a>
+            </div>
+          </div>
+          <div class="contacto-item" *ngIf="landing.contacto_direccion">
+            <div class="contacto-icon" [style.background]="landing.main_color">📍</div>
+            <div class="contacto-details">
+              <strong>Dirección</strong>
+              <span>{{ landing.contacto_direccion }}</span>
+            </div>
+          </div>
+          <div class="contacto-item" *ngIf="landing.contacto_whatsapp">
+            <div class="contacto-icon" [style.background]="landing.main_color">💬</div>
+            <div class="contacto-details">
+              <strong>WhatsApp</strong>
+              <a [href]="getWhatsAppLink(landing.contacto_whatsapp)" target="_blank">
+                {{ landing.contacto_whatsapp }}
+              </a>
+            </div>
+          </div>
+        </div>
+        <div class="contacto-form">
+          <h3>Envíanos un mensaje</h3>
+          <form class="form" (submit)="sendMessage($event)">
+            <div class="form-group">
+              <input type="text" placeholder="Tu nombre" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <input type="email" placeholder="Tu email" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <input type="tel" placeholder="Tu teléfono" class="form-input">
+            </div>
+            <div class="form-group">
+              <textarea placeholder="Tu mensaje" rows="5" class="form-input" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary" [style.background]="landing.main_color">
+              Enviar Mensaje
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sección MAPA/UBICACIÓN -->
+  <section *ngIf="landing.show_mapa && landing.mapa_lat && landing.mapa_lng" 
+           id="mapa" class="section mapa-section">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" [style.color]="landing.main_color">
+          {{ landing.mapa_title || 'Ubícanos' }}
+        </h2>
+        <div class="section-divider" [style.background]="landing.main_color"></div>
+      </div>
+      <div class="mapa-container">
+        <iframe 
+          [src]="getMapUrl(landing.mapa_lat, landing.mapa_lng)"
+          width="100%" 
+          height="450" 
+          style="border:0;" 
+          allowfullscreen="" 
+          loading="lazy" 
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+      </div>
+      <div class="mapa-info">
+        <p><strong>Coordenadas:</strong> {{ landing.mapa_lat }}, {{ landing.mapa_lng }}</p>
+        <a [href]="getGoogleMapsLink(landing.mapa_lat, landing.mapa_lng)" 
+           target="_blank" 
+           class="btn-map"
+           [style.background]="landing.main_color">
+          Abrir en Google Maps
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer" [style.background]="landing.main_color || '#21365E'">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <img *ngIf="landing.logo_url" [src]="landing.logo_url" [alt]="landing.nombre_empresa" class="footer-logo">
+          <span class="footer-company-name">{{ landing.nombre_empresa }}</span>
+          <p class="footer-description">{{ landing.title }}</p>
+        </div>
+        <div class="footer-links">
+          <h4>Enlaces Rápidos</h4>
+          <a *ngIf="landing.show_inicio" (click)="scrollTo('inicio')">Inicio</a>
+          <a *ngIf="landing.show_descripcion" (click)="scrollTo('descripcion')">Nosotros</a>
+          <a *ngIf="landing.show_productos" (click)="scrollTo('productos')">Productos</a>
+          <a *ngIf="landing.show_contacto" (click)="scrollTo('contacto')">Contacto</a>
+        </div>
+        <div class="footer-contact">
+          <h4>Contacto</h4>
+          <p *ngIf="landing.contacto_telefono">📞 {{ landing.contacto_telefono }}</p>
+          <p *ngIf="landing.contacto_email">✉️ {{ landing.contacto_email }}</p>
+          <p *ngIf="landing.contacto_direccion">📍 {{ landing.contacto_direccion }}</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; {{ currentYear }} {{ landing.nombre_empresa }}. Todos los derechos reservados.</p>
+        <p class="footer-credits">Diseñado con 💜 por Infinito DHD</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- WhatsApp Floating Button -->
+  <a *ngIf="landing.contacto_whatsapp" 
+     [href]="getWhatsAppLink(landing.contacto_whatsapp)" 
+     target="_blank" 
+     class="whatsapp-float"
+     [style.background]="landing.main_color">
+    <span class="whatsapp-icon">💬</span>
+  </a>
+</div>
