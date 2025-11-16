@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LandingService } from '../../services/landing.service';
+import { forkJoin, tap } from 'rxjs';
 
 interface Caracteristica {
   icono: string;
@@ -47,6 +48,20 @@ export class LandingFormComponent implements OnInit {
   loading = false;
   message = '';
   messageType: 'success' | 'error' = 'success';
+
+  //Imágenes temporales
+  temporaryFiles: { [key: string]: File } = {};
+  temporaryArrays: {
+    testimonios: { [index: number]: File },
+    pagos: { [index: number]: File },
+    productos: { [index: number]: File },
+    galeria: { [index: number]: File }
+  } = {
+      testimonios: {},
+      pagos: {},
+      productos: {},
+      galeria: {}
+    };
 
   // Secciones colapsables
   sectionsOpen = {
@@ -183,15 +198,8 @@ export class LandingFormComponent implements OnInit {
   onFileSelected(event: any, field: string): void {
     const file = event.target.files[0];
     if (file) {
-      this.landingService.uploadImage(file).subscribe({
-        next: (response) => {
-          (this.landing as any)[field] = response.url;
-          this.showMessage('Imagen subida correctamente', 'success');
-        },
-        error: () => {
-          this.showMessage('Error al subir imagen', 'error');
-        }
-      });
+      this.temporaryFiles[field] = file;
+      this.showMessage('Imagen lista para subir al guardar', 'success');
     }
   }
 
@@ -237,15 +245,8 @@ export class LandingFormComponent implements OnInit {
   onTestimonioImageSelected(event: any, index: number): void {
     const file = event.target.files[0];
     if (file) {
-      this.landingService.uploadImage(file).subscribe({
-        next: (response) => {
-          this.landing.testimonios_json[index].foto_url = response.url;
-          this.showMessage('Imagen subida correctamente', 'success');
-        },
-        error: () => {
-          this.showMessage('Error al subir imagen', 'error');
-        }
-      });
+      this.temporaryArrays.testimonios[index] = file;
+      this.showMessage('Imagen de testimonio lista para subir al guardar', 'success');
     }
   }
 
@@ -264,15 +265,8 @@ export class LandingFormComponent implements OnInit {
   onMetodoPagoImageSelected(event: any, index: number): void {
     const file = event.target.files[0];
     if (file) {
-      this.landingService.uploadImage(file).subscribe({
-        next: (response) => {
-          this.landing.pagos_metodos[index].icono_url = response.url;
-          this.showMessage('Imagen subida correctamente', 'success');
-        },
-        error: () => {
-          this.showMessage('Error al subir imagen', 'error');
-        }
-      });
+      this.temporaryArrays.pagos[index] = file;
+      this.showMessage('Imagen de pago lista para subir al guardar', 'success');
     }
   }
 
@@ -293,15 +287,8 @@ export class LandingFormComponent implements OnInit {
   onProductoImageSelected(event: any, index: number): void {
     const file = event.target.files[0];
     if (file) {
-      this.landingService.uploadImage(file).subscribe({
-        next: (response) => {
-          this.landing.productos_json[index].imagen_url = response.url;
-          this.showMessage('Imagen subida correctamente', 'success');
-        },
-        error: () => {
-          this.showMessage('Error al subir imagen', 'error');
-        }
-      });
+      this.temporaryArrays.productos[index] = file;
+      this.showMessage('Imagen de producto lista para subir al guardar', 'success');
     }
   }
 
@@ -317,46 +304,121 @@ export class LandingFormComponent implements OnInit {
   onGaleriaImageSelected(event: any, index: number): void {
     const file = event.target.files[0];
     if (file) {
-      this.landingService.uploadImage(file).subscribe({
-        next: (response) => {
-          this.landing.galeria_imagenes[index] = response.url;
-          this.showMessage('Imagen subida correctamente', 'success');
-        },
-        error: () => {
-          this.showMessage('Error al subir imagen', 'error');
-        }
-      });
+      this.temporaryArrays.galeria[index] = file;
+      this.showMessage('Imagen de galería lista para subir al guardar', 'success');
     }
   }
 
-  saveLanding(): void {
+  async saveLanding(): Promise<void> {
     this.loading = true;
 
-    if (this.isEditMode && this.landingId) {
-      this.landingService.updateLanding(this.landingId, this.landing).subscribe({
-        next: () => {
-          this.showMessage('Landing actualizada correctamente', 'success');
-          this.loading = false;
-          setTimeout(() => this.router.navigate(['/dashboard']), 1500);
-        },
-        error: () => {
-          this.showMessage('Error al actualizar landing', 'error');
-          this.loading = false;
-        }
-      });
-    } else {
-      this.landingService.createLanding(this.landing).subscribe({
-        next: () => {
-          this.showMessage('Landing creada correctamente', 'success');
-          this.loading = false;
-          setTimeout(() => this.router.navigate(['/dashboard']), 1500);
-        },
-        error: () => {
-          this.showMessage('Error al crear landing', 'error');
-          this.loading = false;
-        }
-      });
+    try {
+      await this.uploadAllImages();
+
+      // 2. Guardar la landing con las URLs de las imágenes
+      if (this.isEditMode && this.landingId) {
+        this.landingService.updateLanding(this.landingId, this.landing).subscribe({
+          next: () => {
+            this.showMessage('Landing actualizada correctamente', 'success');
+            this.loading = false;
+            setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+          },
+          error: () => {
+            this.showMessage('Error al actualizar landing', 'error');
+            this.loading = false;
+          }
+        });
+      } else {
+        this.landingService.createLanding(this.landing).subscribe({
+          next: () => {
+            this.showMessage('Landing creada correctamente', 'success');
+            this.loading = false;
+            setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+          },
+          error: () => {
+            this.showMessage('Error al crear landing', 'error');
+            this.loading = false;
+          }
+        });
+      }
+    } catch (error) {
+      this.showMessage('Error al subir imágenes', 'error');
+      this.loading = false;
     }
+  }
+
+  private uploadAllImages(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const uploadObservables = [];
+
+      for (const [field, file] of Object.entries(this.temporaryFiles)) {
+        uploadObservables.push(
+          this.landingService.uploadImage(file).pipe(
+            tap(response => {
+              (this.landing as any)[field] = response.url;
+            })
+          )
+        );
+      }
+
+      for (const [index, file] of Object.entries(this.temporaryArrays.testimonios)) {
+        const idx = parseInt(index);
+        uploadObservables.push(
+          this.landingService.uploadImage(file).pipe(
+            tap(response => {
+              this.landing.testimonios_json[idx].foto_url = response.url;
+            })
+          )
+        );
+      }
+
+      for (const [index, file] of Object.entries(this.temporaryArrays.pagos)) {
+        const idx = parseInt(index);
+        uploadObservables.push(
+          this.landingService.uploadImage(file).pipe(
+            tap(response => {
+              this.landing.pagos_metodos[idx].icono_url = response.url;
+            })
+          )
+        );
+      }
+
+      for (const [index, file] of Object.entries(this.temporaryArrays.productos)) {
+        const idx = parseInt(index);
+        uploadObservables.push(
+          this.landingService.uploadImage(file).pipe(
+            tap(response => {
+              this.landing.productos_json[idx].imagen_url = response.url;
+            })
+          )
+        );
+      }
+
+      for (const [index, file] of Object.entries(this.temporaryArrays.galeria)) {
+        const idx = parseInt(index);
+        uploadObservables.push(
+          this.landingService.uploadImage(file).pipe(
+            tap(response => {
+              this.landing.galeria_imagenes[idx] = response.url;
+            })
+          )
+        );
+      }
+
+      if (uploadObservables.length === 0) {
+        resolve();
+        return;
+      }
+
+      forkJoin(uploadObservables).subscribe({
+        next: () => {
+          resolve();
+        },
+        error: (error) => {
+          reject(error);
+        }
+      });
+    });
   }
 
   showMessage(msg: string, type: 'success' | 'error'): void {
@@ -368,6 +430,13 @@ export class LandingFormComponent implements OnInit {
   }
 
   cancel(): void {
+    this.temporaryFiles = {};
+    this.temporaryArrays = {
+      testimonios: {},
+      pagos: {},
+      productos: {},
+      galeria: {}
+    };
     this.router.navigate(['/dashboard']);
   }
 }
