@@ -390,17 +390,28 @@ app.put('/api/landings/:id', async (req, res) => {
     const {
       nombre_empresa, correo_contacto, telefono_contacto, title, main_color,
       logo_url, favicon_url, banner_url, is_active,
+      // INICIO
       show_inicio, inicio_title, inicio_subtitle, inicio_description, inicio_background_url,
+      // DESCRIPCIÓN
       show_descripcion, descripcion_title, descripcion_text, descripcion_image_url,
+      // CARACTERÍSTICAS
       show_caracteristicas, caracteristicas_title, caracteristicas_text, caracteristicas_list,
+      // HORARIOS
       show_horarios, horarios_title, horarios_json,
+      // TESTIMONIOS
       show_testimonios, testimonios_title, testimonios_json,
+      // PAGOS
       show_pagos, pagos_title, pagos_descripcion, pagos_metodos,
+      // PRODUCTOS
       show_productos, productos_title, productos_descripcion, productos_json,
+      // GALERÍA
       show_galeria, galeria_title, galeria_imagenes,
+      // CONTACTO
       show_contacto, contacto_title, contacto_descripcion, contacto_telefono,
       contacto_email, contacto_direccion, contacto_whatsapp,
+      // MAPA
       show_mapa, mapa_title, mapa_lat, mapa_lng,
+      // EXTRAS
       fuente_principal, fondo_color, fondo_imagen_url, seo_keywords, seo_description
     } = req.body;
 
@@ -434,23 +445,65 @@ app.put('/api/landings/:id', async (req, res) => {
     `;
 
     const values = [
-      nombre_empresa, correo_contacto, telefono_contacto, title, main_color,
-      logo_url, favicon_url, banner_url, is_active,
-      show_inicio, inicio_title, inicio_subtitle, inicio_description, inicio_background_url,
-      show_descripcion, descripcion_title, descripcion_text, descripcion_image_url,
-      show_caracteristicas, caracteristicas_title, caracteristicas_text,
-      JSON.stringify(caracteristicas_list || []),
-      show_horarios, horarios_title, JSON.stringify(horarios_json || []),
-      show_testimonios, testimonios_title, JSON.stringify(testimonios_json || []),
-      show_pagos, pagos_title, pagos_descripcion, JSON.stringify(pagos_metodos || []),
-      show_productos, productos_title, productos_descripcion, JSON.stringify(productos_json || []),
-      show_galeria, galeria_title, JSON.stringify(galeria_imagenes || []),
-      show_contacto, contacto_title, contacto_descripcion, contacto_telefono,
-      contacto_email, contacto_direccion, contacto_whatsapp,
-      show_mapa, mapa_title, mapa_lat, mapa_lng,
-      fuente_principal, fondo_color, fondo_imagen_url, seo_keywords, seo_description,
-      id
+      nombre_empresa, // 1
+      correo_contacto, // 2
+      telefono_contacto, // 3
+      title, // 4
+      main_color || '#21365E', // 5
+      logo_url, // 6
+      favicon_url, // 7
+      banner_url, // 8
+      is_active !== undefined ? is_active : true, // 9
+      show_inicio !== undefined ? show_inicio : true, // 10
+      inicio_title, // 11
+      inicio_subtitle, // 12
+      inicio_description, // 13
+      inicio_background_url, // 14
+      show_descripcion !== undefined ? show_descripcion : true, // 15
+      descripcion_title, // 16
+      descripcion_text, // 17
+      descripcion_image_url, // 18
+      show_caracteristicas !== undefined ? show_caracteristicas : true, // 19
+      caracteristicas_title, // 20
+      caracteristicas_text, // 21
+      JSON.stringify(caracteristicas_list || []), // 22
+      show_horarios !== undefined ? show_horarios : true, // 23
+      horarios_title, // 24
+      JSON.stringify(horarios_json || []), // 25
+      show_testimonios !== undefined ? show_testimonios : true, // 26
+      testimonios_title, // 27
+      JSON.stringify(testimonios_json || []), // 28
+      show_pagos !== undefined ? show_pagos : false, // 29
+      pagos_title, // 30
+      pagos_descripcion, // 31
+      JSON.stringify(pagos_metodos || []), // 32
+      show_productos !== undefined ? show_productos : true, // 33
+      productos_title, // 34
+      productos_descripcion, // 35
+      JSON.stringify(productos_json || []), // 36
+      show_galeria !== undefined ? show_galeria : true, // 37
+      galeria_title, // 38
+      JSON.stringify(galeria_imagenes || []), // 39
+      show_contacto !== undefined ? show_contacto : true, // 40
+      contacto_title, // 41
+      contacto_descripcion, // 42
+      contacto_telefono, // 43
+      contacto_email, // 44
+      contacto_direccion, // 45
+      contacto_whatsapp, // 46
+      show_mapa !== undefined ? show_mapa : true, // 47
+      mapa_title, // 48
+      mapa_lat, // 49
+      mapa_lng, // 50
+      fuente_principal || 'Poppins', // 51
+      fondo_color, // 52
+      fondo_imagen_url, // 53
+      seo_keywords, // 54
+      seo_description, // 55
+      id // 56
     ];
+
+    console.log('Número de valores en UPDATE:', values.length);
 
     const result = await client.query(query, values);
 
@@ -467,23 +520,6 @@ app.put('/api/landings/:id', async (req, res) => {
     res.status(500).json({ error: 'Error al actualizar landing', details: error.message });
   } finally {
     client.release();
-  }
-});
-
-// Eliminar landing
-app.delete('/api/landings/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await pool.query('DELETE FROM landings WHERE id = $1 RETURNING *', [id]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Landing no encontrada' });
-    }
-
-    res.json({ message: 'Landing eliminada correctamente', landing: result.rows[0] });
-  } catch (error) {
-    console.error('Error al eliminar landing:', error);
-    res.status(500).json({ error: 'Error al eliminar landing' });
   }
 });
 

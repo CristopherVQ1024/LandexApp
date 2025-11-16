@@ -74,53 +74,53 @@ export class LandingFormComponent implements OnInit {
     favicon_url: '',
     banner_url: '',
     is_active: true,
-    
+
     // INICIO
     show_inicio: true,
     inicio_title: '',
     inicio_subtitle: '',
     inicio_description: '',
     inicio_background_url: '',
-    
+
     // DESCRIPCIÓN
     show_descripcion: true,
     descripcion_title: '',
     descripcion_text: '',
     descripcion_image_url: '',
-    
+
     // CARACTERÍSTICAS
     show_caracteristicas: true,
     caracteristicas_title: '',
     caracteristicas_text: '',
     caracteristicas_list: [] as Caracteristica[],
-    
+
     // HORARIOS
     show_horarios: true,
     horarios_title: '',
     horarios_json: [] as Horario[],
-    
+
     // TESTIMONIOS
     show_testimonios: true,
     testimonios_title: '',
     testimonios_json: [] as Testimonio[],
-    
+
     // PAGOS
     show_pagos: false,
     pagos_title: '',
     pagos_descripcion: '',
     pagos_metodos: [] as MetodoPago[],
-    
+
     // PRODUCTOS
     show_productos: true,
     productos_title: '',
     productos_descripcion: '',
     productos_json: [] as Producto[],
-    
+
     // GALERÍA
     show_galeria: true,
     galeria_title: '',
     galeria_imagenes: [] as string[],
-    
+
     // CONTACTO
     show_contacto: true,
     contacto_title: '',
@@ -129,13 +129,13 @@ export class LandingFormComponent implements OnInit {
     contacto_email: '',
     contacto_direccion: '',
     contacto_whatsapp: '',
-    
+
     // MAPA
     show_mapa: true,
     mapa_title: '',
     mapa_lat: null as number | null,
     mapa_lng: null as number | null,
-    
+
     // CONFIGURACIONES EXTRA
     fuente_principal: 'Poppins',
     fondo_color: '',
@@ -148,7 +148,7 @@ export class LandingFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private landingService: LandingService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -166,7 +166,7 @@ export class LandingFormComponent implements OnInit {
 
   loadLanding(): void {
     if (!this.landingId) return;
-    
+
     this.loading = true;
     this.landingService.getLandingById(this.landingId).subscribe({
       next: (data) => {
@@ -331,7 +331,7 @@ export class LandingFormComponent implements OnInit {
 
   saveLanding(): void {
     this.loading = true;
-    
+
     if (this.isEditMode && this.landingId) {
       this.landingService.updateLanding(this.landingId, this.landing).subscribe({
         next: () => {
