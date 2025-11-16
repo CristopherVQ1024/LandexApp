@@ -38,7 +38,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
+const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter: (req, file, cb) => {
@@ -68,8 +68,8 @@ app.post('/api/auth/google', async (req, res) => {
 
     // Validar datos requeridos
     if (!google_id || !email) {
-      return res.status(400).json({ 
-        error: 'Faltan datos requeridos (google_id, email)' 
+      return res.status(400).json({
+        error: 'Faltan datos requeridos (google_id, email)'
       });
     }
 
@@ -82,7 +82,7 @@ app.post('/api/auth/google', async (req, res) => {
     if (checkResult.rows.length > 0) {
       // Usuario existe - Actualizar información
       user = checkResult.rows[0];
-      
+
       const updateQuery = `
         UPDATE admins 
         SET name = $1, picture = $2, updated_at = CURRENT_TIMESTAMP 
@@ -108,10 +108,10 @@ app.post('/api/auth/google', async (req, res) => {
 
     // Generar JWT token
     const token = jwt.sign(
-      { 
-        id: user.id, 
-        email: user.email, 
-        role: user.role 
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role
       },
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
@@ -135,9 +135,9 @@ app.post('/api/auth/google', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error en /api/auth/google:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Error en el servidor',
-      details: error.message 
+      details: error.message
     });
   }
 });
@@ -152,7 +152,7 @@ app.get('/api/auth/verify', async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     // Buscar usuario en la base de datos
     const query = 'SELECT id, google_id, name, email, picture, role, status FROM admins WHERE id = $1';
     const result = await pool.query(query, [decoded.id]);
@@ -175,9 +175,9 @@ app.get('/api/auth/verify', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error verificando token:', error);
-    res.status(401).json({ 
+    res.status(401).json({
       error: 'Token inválido',
-      details: error.message 
+      details: error.message
     });
   }
 });
@@ -192,7 +192,7 @@ app.get('/api/user/profile', async (req, res) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     const query = 'SELECT id, google_id, name, email, picture, role, status, created_at FROM admins WHERE id = $1';
     const result = await pool.query(query, [decoded.id]);
 
@@ -232,11 +232,11 @@ app.get('/api/landings/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query('SELECT * FROM landings WHERE id = $1', [id]);
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Landing no encontrada' });
     }
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error al obtener landing:', error);
@@ -247,10 +247,10 @@ app.get('/api/landings/:id', async (req, res) => {
 // Crear nueva landing
 app.post('/api/landings', async (req, res) => {
   const client = await pool.connect();
-  
+
   try {
     await client.query('BEGIN');
-    
+
     const {
       nombre_empresa, correo_contacto, telefono_contacto, title, main_color,
       logo_url, favicon_url, banner_url, is_active,
@@ -301,31 +301,73 @@ app.post('/api/landings', async (req, res) => {
         $21, $22, $23, $24, $25, $26, $27, $28, $29, $30,
         $31, $32, $33, $34, $35, $36, $37, $38, $39, $40,
         $41, $42, $43, $44, $45, $46, $47, $48, $49, $50,
-        $51, $52
-      ) RETURNING *
-    `;
+        $51, $52, $53, $54, $55  -- Agregados los 3 faltantes
+      ) RETURNING *`;
+
 
     const values = [
-      nombre_empresa, correo_contacto, telefono_contacto, title, main_color || '#21365E',
-      logo_url, favicon_url, banner_url, is_active !== undefined ? is_active : true,
-      show_inicio !== undefined ? show_inicio : true, inicio_title, inicio_subtitle, inicio_description, inicio_background_url,
-      show_descripcion !== undefined ? show_descripcion : true, descripcion_title, descripcion_text, descripcion_image_url,
-      show_caracteristicas !== undefined ? show_caracteristicas : true, caracteristicas_title, caracteristicas_text, 
-      JSON.stringify(caracteristicas_list || []),
-      show_horarios !== undefined ? show_horarios : true, horarios_title, JSON.stringify(horarios_json || []),
-      show_testimonios !== undefined ? show_testimonios : true, testimonios_title, JSON.stringify(testimonios_json || []),
-      show_pagos || false, pagos_title, pagos_descripcion, JSON.stringify(pagos_metodos || []),
-      show_productos !== undefined ? show_productos : true, productos_title, productos_descripcion, 
-      JSON.stringify(productos_json || []),
-      show_galeria !== undefined ? show_galeria : true, galeria_title, JSON.stringify(galeria_imagenes || []),
-      show_contacto !== undefined ? show_contacto : true, contacto_title, contacto_descripcion, contacto_telefono,
-      contacto_email, contacto_direccion, contacto_whatsapp,
-      show_mapa !== undefined ? show_mapa : true, mapa_title, mapa_lat, mapa_lng,
-      fuente_principal || 'Poppins', fondo_color, fondo_imagen_url, seo_keywords, seo_description
+      nombre_empresa, // 1
+      correo_contacto, // 2
+      telefono_contacto, // 3
+      title, // 4
+      main_color || '#21365E', // 5
+      logo_url, // 6
+      favicon_url, // 7
+      banner_url, // 8
+      is_active !== undefined ? is_active : true, // 9
+      show_inicio !== undefined ? show_inicio : true, // 10
+      inicio_title, // 11
+      inicio_subtitle, // 12
+      inicio_description, // 13
+      inicio_background_url, // 14
+      show_descripcion !== undefined ? show_descripcion : true, // 15
+      descripcion_title, // 16
+      descripcion_text, // 17
+      descripcion_image_url, // 18
+      show_caracteristicas !== undefined ? show_caracteristicas : true, // 19
+      caracteristicas_title, // 20
+      caracteristicas_text, // 21
+      JSON.stringify(caracteristicas_list || []), // 22
+      show_horarios !== undefined ? show_horarios : true, // 23
+      horarios_title, // 24
+      JSON.stringify(horarios_json || []), // 25
+      show_testimonios !== undefined ? show_testimonios : true, // 26
+      testimonios_title, // 27
+      JSON.stringify(testimonios_json || []), // 28
+      show_pagos !== undefined ? show_pagos : false, // 29
+      pagos_title, // 30
+      pagos_descripcion, // 31
+      JSON.stringify(pagos_metodos || []), // 32
+      show_productos !== undefined ? show_productos : true, // 33
+      productos_title, // 34
+      productos_descripcion, // 35
+      JSON.stringify(productos_json || []), // 36
+      show_galeria !== undefined ? show_galeria : true, // 37
+      galeria_title, // 38
+      JSON.stringify(galeria_imagenes || []), // 39
+      show_contacto !== undefined ? show_contacto : true, // 40
+      contacto_title, // 41
+      contacto_descripcion, // 42
+      contacto_telefono, // 43
+      contacto_email, // 44
+      contacto_direccion, // 45
+      contacto_whatsapp, // 46
+      show_mapa !== undefined ? show_mapa : true, // 47
+      mapa_title, // 48
+      mapa_lat, // 49
+      mapa_lng, // 50
+      fuente_principal || 'Poppins', // 51
+      fondo_color, // 52
+      fondo_imagen_url, // 53
+      seo_keywords, // 54
+      seo_description // 55
     ];
 
+    // Verifica que el array 'values' tenga exactamente 52 elementos
+    console.log('Número de valores:', values.length);
+
     const result = await client.query(query, values);
-    
+
     await client.query('COMMIT');
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -340,10 +382,10 @@ app.post('/api/landings', async (req, res) => {
 // Actualizar landing
 app.put('/api/landings/:id', async (req, res) => {
   const client = await pool.connect();
-  
+
   try {
     await client.query('BEGIN');
-    
+
     const { id } = req.params;
     const {
       nombre_empresa, correo_contacto, telefono_contacto, title, main_color,
@@ -396,7 +438,7 @@ app.put('/api/landings/:id', async (req, res) => {
       logo_url, favicon_url, banner_url, is_active,
       show_inicio, inicio_title, inicio_subtitle, inicio_description, inicio_background_url,
       show_descripcion, descripcion_title, descripcion_text, descripcion_image_url,
-      show_caracteristicas, caracteristicas_title, caracteristicas_text, 
+      show_caracteristicas, caracteristicas_title, caracteristicas_text,
       JSON.stringify(caracteristicas_list || []),
       show_horarios, horarios_title, JSON.stringify(horarios_json || []),
       show_testimonios, testimonios_title, JSON.stringify(testimonios_json || []),
@@ -411,12 +453,12 @@ app.put('/api/landings/:id', async (req, res) => {
     ];
 
     const result = await client.query(query, values);
-    
+
     if (result.rows.length === 0) {
       await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Landing no encontrada' });
     }
-    
+
     await client.query('COMMIT');
     res.json(result.rows[0]);
   } catch (error) {
@@ -433,11 +475,11 @@ app.delete('/api/landings/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query('DELETE FROM landings WHERE id = $1 RETURNING *', [id]);
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Landing no encontrada' });
     }
-    
+
     res.json({ message: 'Landing eliminada correctamente', landing: result.rows[0] });
   } catch (error) {
     console.error('Error al eliminar landing:', error);
@@ -450,16 +492,16 @@ app.patch('/api/landings/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
     const { is_active } = req.body;
-    
+
     const result = await pool.query(
       'UPDATE landings SET is_active = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
       [is_active, id]
     );
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Landing no encontrada' });
     }
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Error al cambiar estado:', error);
@@ -474,7 +516,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No se subió ningún archivo' });
     }
-    
+
     const fileUrl = `http://localhost:${PORT}/uploads/${req.file.filename}`;
     res.json({ url: fileUrl });
   } catch (error) {
@@ -490,11 +532,11 @@ app.use((error, req, res, next) => {
       return res.status(400).json({ error: 'El archivo es demasiado grande (máx 10MB)' });
     }
   }
-  
+
   if (error) {
     return res.status(400).json({ error: error.message });
   }
-  
+
   next();
 });
 

@@ -1,0 +1,518 @@
+<div class="landing-form-container">
+  <div class="form-header">
+    <h1>{{ isEditMode ? 'Editar Landing' : 'Nueva Landing' }}</h1>
+    <div class="header-actions">
+      <button class="btn-cancel" (click)="cancel()">Cancelar</button>
+      <button class="btn-save" (click)="saveLanding()" [disabled]="loading">
+        {{ loading ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="alert" *ngIf="message" [ngClass]="messageType">
+    {{ message }}
+  </div>
+
+  <div class="form-content">
+    <!-- INFORMACIÓN GENERAL -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('general')">
+        <h2>📋 Información General</h2>
+        <span class="toggle-icon">{{ sectionsOpen.general ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.general">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre de la Empresa *</label>
+            <input type="text" [(ngModel)]="landing.nombre_empresa" required>
+          </div>
+          <div class="form-group">
+            <label>Título de la Página *</label>
+            <input type="text" [(ngModel)]="landing.title" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Correo de Contacto</label>
+            <input type="email" [(ngModel)]="landing.correo_contacto">
+          </div>
+          <div class="form-group">
+            <label>Teléfono de Contacto</label>
+            <input type="tel" [(ngModel)]="landing.telefono_contacto">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Color Principal</label>
+            <div class="color-input">
+              <input type="color" [(ngModel)]="landing.main_color">
+              <input type="text" [(ngModel)]="landing.main_color" placeholder="#21365E">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Fuente Principal</label>
+            <select [(ngModel)]="landing.fuente_principal">
+              <option value="Poppins">Poppins</option>
+              <option value="Roboto">Roboto</option>
+              <option value="Open Sans">Open Sans</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Lato">Lato</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Logo</label>
+            <input type="file" (change)="onFileSelected($event, 'logo_url')" accept="image/*">
+            <small *ngIf="landing.logo_url">{{ landing.logo_url }}</small>
+          </div>
+          <div class="form-group">
+            <label>Favicon</label>
+            <input type="file" (change)="onFileSelected($event, 'favicon_url')" accept="image/*">
+            <small *ngIf="landing.favicon_url">{{ landing.favicon_url }}</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Banner Principal</label>
+          <input type="file" (change)="onFileSelected($event, 'banner_url')" accept="image/*">
+          <small *ngIf="landing.banner_url">{{ landing.banner_url }}</small>
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label>
+            <input type="checkbox" [(ngModel)]="landing.is_active">
+            Landing Activa
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN INICIO -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('inicio')">
+        <div class="header-left">
+          <input type="checkbox" [(ngModel)]="landing.show_inicio" (click)="$event.stopPropagation()">
+          <h2>🏠 Sección Inicio</h2>
+        </div>
+        <span class="toggle-icon">{{ sectionsOpen.inicio ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.inicio && landing.show_inicio">
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" [(ngModel)]="landing.inicio_title">
+        </div>
+        <div class="form-group">
+          <label>Subtítulo</label>
+          <input type="text" [(ngModel)]="landing.inicio_subtitle">
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="landing.inicio_description" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Imagen de Fondo</label>
+          <input type="file" (change)="onFileSelected($event, 'inicio_background_url')" accept="image/*">
+          <small *ngIf="landing.inicio_background_url">{{ landing.inicio_background_url }}</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN DESCRIPCIÓN -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('descripcion')">
+        <div class="header-left">
+          <input type="checkbox" [(ngModel)]="landing.show_descripcion" (click)="$event.stopPropagation()">
+          <h2>🧭 Sección Descripción</h2>
+        </div>
+        <span class="toggle-icon">{{ sectionsOpen.descripcion ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.descripcion && landing.show_descripcion">
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" [(ngModel)]="landing.descripcion_title">
+        </div>
+        <div class="form-group">
+          <label>Texto</label>
+          <textarea [(ngModel)]="landing.descripcion_text" rows="6"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Imagen</label>
+          <input type="file" (change)="onFileSelected($event, 'descripcion_image_url')" accept="image/*">
+          <small *ngIf="landing.descripcion_image_url">{{ landing.descripcion_image_url }}</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN CARACTERÍSTICAS -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('caracteristicas')">
+        <div class="header-left">
+          <input type="checkbox" [(ngModel)]="landing.show_caracteristicas" (click)="$event.stopPropagation()">
+          <h2>⚙️ Características / Servicios</h2>
+        </div>
+        <span class="toggle-icon">{{ sectionsOpen.caracteristicas ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.caracteristicas && landing.show_caracteristicas">
+        <div class="form-group">
+          <label>Título de Sección</label>
+          <input type="text" [(ngModel)]="landing.caracteristicas_title">
+        </div>
+        <div class="form-group">
+          <label>Texto Introductorio</label>
+          <textarea [(ngModel)]="landing.caracteristicas_text" rows="3"></textarea>
+        </div>
+
+        <div class="list-header">
+          <h3>Lista de Características</h3>
+          <button class="btn-add" (click)="addCaracteristica()">+ Agregar</button>
+        </div>
+
+        <div class="item-list" *ngFor="let car of landing.caracteristicas_list; let i = index">
+          <div class="item-card">
+            <div class="item-header">
+              <h4>Característica {{ i + 1 }}</h4>
+              <button class="btn-remove" (click)="removeCaracteristica(i)">✕</button>
+            </div>
+            <div class="form-group">
+              <label>Ícono (emoji o texto)</label>
+              <input type="text" [(ngModel)]="car.icono" placeholder="🚀">
+            </div>
+            <div class="form-group">
+              <label>Título</label>
+              <input type="text" [(ngModel)]="car.titulo">
+            </div>
+            <div class="form-group">
+              <label>Descripción</label>
+              <textarea [(ngModel)]="car.descripcion" rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN HORARIOS -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('horarios')">
+        <div class="header-left">
+          <input type="checkbox" [(ngModel)]="landing.show_horarios" (click)="$event.stopPropagation()">
+          <h2>🕒 Horarios de Atención</h2>
+        </div>
+        <span class="toggle-icon">{{ sectionsOpen.horarios ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.horarios && landing.show_horarios">
+        <div class="form-group">
+          <label>Título de Sección</label>
+          <input type="text" [(ngModel)]="landing.horarios_title">
+        </div>
+
+        <div class="list-header">
+          <h3>Horarios</h3>
+          <button class="btn-add" (click)="addHorario()">+ Agregar</button>
+        </div>
+
+        <div class="item-list" *ngFor="let horario of landing.horarios_json; let i = index">
+          <div class="item-card compact">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Día</label>
+                <input type="text" [(ngModel)]="horario.dia" placeholder="Lunes - Viernes">
+              </div>
+              <div class="form-group">
+                <label>Horario</label>
+                <input type="text" [(ngModel)]="horario.horario" placeholder="9:00 AM - 6:00 PM">
+              </div>
+              <button class="btn-remove-inline" (click)="removeHorario(i)">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN TESTIMONIOS -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('testimonios')">
+        <div class="header-left">
+          <input type="checkbox" [(ngModel)]="landing.show_testimonios" (click)="$event.stopPropagation()">
+          <h2>💬 Testimonios</h2>
+        </div>
+        <span class="toggle-icon">{{ sectionsOpen.testimonios ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.testimonios && landing.show_testimonios">
+        <div class="form-group">
+          <label>Título de Sección</label>
+          <input type="text" [(ngModel)]="landing.testimonios_title">
+        </div>
+
+        <div class="list-header">
+          <h3>Testimonios de Clientes</h3>
+          <button class="btn-add" (click)="addTestimonio()">+ Agregar</button>
+        </div>
+
+        <div class="item-list" *ngFor="let test of landing.testimonios_json; let i = index">
+          <div class="item-card">
+            <div class="item-header">
+              <h4>Testimonio {{ i + 1 }}</h4>
+              <button class="btn-remove" (click)="removeTestimonio(i)">✕</button>
+            </div>
+            <div class="form-group">
+              <label>Nombre</label>
+              <input type="text" [(ngModel)]="test.nombre">
+            </div>
+            <div class="form-group">
+              <label>Cargo / Empresa</label>
+              <input type="text" [(ngModel)]="test.cargo">
+            </div>
+            <div class="form-group">
+              <label>Comentario</label>
+              <textarea [(ngModel)]="test.comentario" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Foto (opcional)</label>
+              <input type="file" (change)="onTestimonioImageSelected($event, i)" accept="image/*">
+              <small *ngIf="test.foto_url">{{ test.foto_url }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN PAGOS -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('pagos')">
+        <div class="header-left">
+          <input type="checkbox" [(ngModel)]="landing.show_pagos" (click)="$event.stopPropagation()">
+          <h2>💳 Métodos de Pago</h2>
+        </div>
+        <span class="toggle-icon">{{ sectionsOpen.pagos ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.pagos && landing.show_pagos">
+        <div class="form-group">
+          <label>Título de Sección</label>
+          <input type="text" [(ngModel)]="landing.pagos_title">
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="landing.pagos_descripcion" rows="3"></textarea>
+        </div>
+
+        <div class="list-header">
+          <h3>Métodos Aceptados</h3>
+          <button class="btn-add" (click)="addMetodoPago()">+ Agregar</button>
+        </div>
+
+        <div class="item-list" *ngFor="let metodo of landing.pagos_metodos; let i = index">
+          <div class="item-card compact">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nombre</label>
+                <input type="text" [(ngModel)]="metodo.nombre" placeholder="Visa, Yape, etc.">
+              </div>
+              <div class="form-group">
+                <label>Ícono</label>
+                <input type="file" (change)="onMetodoPagoImageSelected($event, i)" accept="image/*">
+                <small *ngIf="metodo.icono_url">{{ metodo.icono_url }}</small>
+              </div>
+              <button class="btn-remove-inline" (click)="removeMetodoPago(i)">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN PRODUCTOS -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('productos')">
+        <div class="header-left">
+          <input type="checkbox" [(ngModel)]="landing.show_productos" (click)="$event.stopPropagation()">
+          <h2>🛍️ Productos / Servicios</h2>
+        </div>
+        <span class="toggle-icon">{{ sectionsOpen.productos ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.productos && landing.show_productos">
+        <div class="form-group">
+          <label>Título de Sección</label>
+          <input type="text" [(ngModel)]="landing.productos_title">
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="landing.productos_descripcion" rows="3"></textarea>
+        </div>
+
+        <div class="list-header">
+          <h3>Catálogo</h3>
+          <button class="btn-add" (click)="addProducto()">+ Agregar</button>
+        </div>
+
+        <div class="item-list" *ngFor="let prod of landing.productos_json; let i = index">
+          <div class="item-card">
+            <div class="item-header">
+              <h4>Producto {{ i + 1 }}</h4>
+              <button class="btn-remove" (click)="removeProducto(i)">✕</button>
+            </div>
+            <div class="form-group">
+              <label>Nombre</label>
+              <input type="text" [(ngModel)]="prod.nombre">
+            </div>
+            <div class="form-group">
+              <label>Descripción</label>
+              <textarea [(ngModel)]="prod.descripcion" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Precio</label>
+              <input type="text" [(ngModel)]="prod.precio" placeholder="S/. 100.00">
+            </div>
+            <div class="form-group">
+              <label>Imagen</label>
+              <input type="file" (change)="onProductoImageSelected($event, i)" accept="image/*">
+              <small *ngIf="prod.imagen_url">{{ prod.imagen_url }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN GALERÍA -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('galeria')">
+        <div class="header-left">
+          <input type="checkbox" [(ngModel)]="landing.show_galeria" (click)="$event.stopPropagation()">
+          <h2>🖼️ Galería de Imágenes</h2>
+        </div>
+        <span class="toggle-icon">{{ sectionsOpen.galeria ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.galeria && landing.show_galeria">
+        <div class="form-group">
+          <label>Título de Sección</label>
+          <input type="text" [(ngModel)]="landing.galeria_title">
+        </div>
+
+        <div class="list-header">
+          <h3>Imágenes</h3>
+          <button class="btn-add" (click)="addGaleriaImage()">+ Agregar</button>
+        </div>
+
+        <div class="item-list" *ngFor="let img of landing.galeria_imagenes; let i = index">
+          <div class="item-card compact">
+            <div class="form-row">
+              <div class="form-group full-width">
+                <label>Imagen {{ i + 1 }}</label>
+                <input type="file" (change)="onGaleriaImageSelected($event, i)" accept="image/*">
+                <small *ngIf="img">{{ img }}</small>
+              </div>
+              <button class="btn-remove-inline" (click)="removeGaleriaImage(i)">✕</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN CONTACTO -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('contacto')">
+        <div class="header-left">
+          <input type="checkbox" [(ngModel)]="landing.show_contacto" (click)="$event.stopPropagation()">
+          <h2>📞 Contacto</h2>
+        </div>
+        <span class="toggle-icon">{{ sectionsOpen.contacto ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.contacto && landing.show_contacto">
+        <div class="form-group">
+          <label>Título de Sección</label>
+          <input type="text" [(ngModel)]="landing.contacto_title">
+        </div>
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="landing.contacto_descripcion" rows="3"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Teléfono</label>
+            <input type="tel" [(ngModel)]="landing.contacto_telefono">
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" [(ngModel)]="landing.contacto_email">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>WhatsApp</label>
+            <input type="tel" [(ngModel)]="landing.contacto_whatsapp" placeholder="+51 999 999 999">
+          </div>
+          <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" [(ngModel)]="landing.contacto_direccion">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN MAPA -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('mapa')">
+        <div class="header-left">
+          <input type="checkbox" [(ngModel)]="landing.show_mapa" (click)="$event.stopPropagation()">
+          <h2>🗺️ Ubicación / Mapa</h2>
+        </div>
+        <span class="toggle-icon">{{ sectionsOpen.mapa ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.mapa && landing.show_mapa">
+        <div class="form-group">
+          <label>Título de Sección</label>
+          <input type="text" [(ngModel)]="landing.mapa_title">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Latitud</label>
+            <input type="number" [(ngModel)]="landing.mapa_lat" step="0.00000001" placeholder="-16.409047">
+          </div>
+          <div class="form-group">
+            <label>Longitud</label>
+            <input type="number" [(ngModel)]="landing.mapa_lng" step="0.00000001" placeholder="-71.537451">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN SEO -->
+    <div class="section">
+      <div class="section-header" (click)="toggleSection('seo')">
+        <h2>🔍 SEO y Configuraciones</h2>
+        <span class="toggle-icon">{{ sectionsOpen.seo ? '▼' : '▶' }}</span>
+      </div>
+      <div class="section-content" *ngIf="sectionsOpen.seo">
+        <div class="form-group">
+          <label>Palabras Clave (SEO)</label>
+          <input type="text" [(ngModel)]="landing.seo_keywords" placeholder="empresa, servicio, ubicación">
+        </div>
+        <div class="form-group">
+          <label>Descripción SEO</label>
+          <textarea [(ngModel)]="landing.seo_description" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Color de Fondo</label>
+          <div class="color-input">
+            <input type="color" [(ngModel)]="landing.fondo_color">
+            <input type="text" [(ngModel)]="landing.fondo_color" placeholder="#FFFFFF">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Imagen de Fondo General</label>
+          <input type="file" (change)="onFileSelected($event, 'fondo_imagen_url')" accept="image/*">
+          <small *ngIf="landing.fondo_imagen_url">{{ landing.fondo_imagen_url }}</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-footer">
+    <button class="btn-cancel" (click)="cancel()">Cancelar</button>
+    <button class="btn-save" (click)="saveLanding()" [disabled]="loading">
+      {{ loading ? 'Guardando...' : (isEditMode ? 'Actualizar Landing' : 'Crear Landing') }}
+    </button>
+  </div>
+</div>

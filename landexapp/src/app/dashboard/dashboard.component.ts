@@ -1,48 +1,127 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
+import { LandingService } from '../../services/landing.service';
+
+interface LandingListItem {
+  id: number;
+  nombre_empresa: string;
+  title: string;
+  correo_contacto: string;
+  telefono_contacto: string;
+  is_active: boolean;
+  created_at: string;
+}
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
   imports: [CommonModule],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.scss'
+  styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-  private authService = inject(AuthService);
-  private router = inject(Router);
+  landings: LandingListItem[] = [];
+  loading = false;
+  message = '';
+  messageType: 'success' | 'error' = 'success';
+  showDeleteModal = false;
+  landingToDelete: LandingListItem | null = null;
 
-  userName: string = '';
-  userEmail: string = '';
-  userPhoto: string = '';
-  userRole: string = '';
+  constructor(
+    private landingService: LandingService,
+    private router: Router
+  ) {}
 
-  ngOnInit() {
-    const userData = this.authService.getUserData();
-
-    if (userData) {
-      this.userName = userData.name || 'Usuario';
-      this.userEmail = userData.email || '';
-      this.userPhoto = userData.picture || '';
-      this.userRole = userData.role || 'admin';
-    } else {
-      const user = this.authService.getCurrentUser();
-      if (user) {
-        this.userName = user.displayName || 'Usuario';
-        this.userEmail = user.email || '';
-        this.userPhoto = user.photoURL || '';
-      }
-    }
+  ngOnInit(): void {
+    this.loadLandings();
   }
 
-  async logout() {
-    try {
-      await this.authService.logout();
-      this.router.navigate(['/login']);
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
+  loadLandings(): void {
+    this.loading = true;
+    this.landingService.getAllLandings().subscribe({
+      next: (data) => {
+        this.landings = data;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.showMessage('Error al cargar las landings', 'error');
+        this.loading = false;
+      }
+    });
+  }
+
+  createLanding(): void {
+    this.router.navigate(['/landing/new']);
+  }
+
+  editLanding(id: number): void {
+    this.router.navigate(['/landing/edit', id]);
+  }
+
+  viewLanding(id: number): void {
+    // Abrir en nueva pestaña la vista previa
+    window.open(`http://localhost:4200/preview/${id}`, '_blank');
+  }
+
+  confirmDelete(landing: LandingListItem): void {
+    this.landingToDelete = landing;
+    this.showDeleteModal = true;
+  }
+
+  cancelDelete(): void {
+    this.showDeleteModal = false;
+    this.landingToDelete = null;
+  }
+
+  deleteLanding(): void {
+    if (!this.landingToDelete) return;
+
+    this.loading = true;
+    this.landingService.deleteLanding(this.landingToDelete.id).subscribe({
+      next: () => {
+        this.showMessage('Landing eliminada correctamente', 'success');
+        this.showDeleteModal = false;
+        this.landingToDelete = null;
+        this.loadLandings();
+      },
+      error: () => {
+        this.showMessage('Error al eliminar landing', 'error');
+        this.loading = false;
+      }
+    });
+  }
+
+  toggleStatus(landing: LandingListItem): void {
+    const newStatus = !landing.is_active;
+    this.landingService.toggleLandingStatus(landing.id, newStatus).subscribe({
+      next: () => {
+        landing.is_active = newStatus;
+        this.showMessage(
+          `Landing ${newStatus ? 'activada' : 'desactivada'} correctamente`,
+          'success'
+        );
+      },
+      error: () => {
+        this.showMessage('Error al cambiar estado', 'error');
+      }
+    });
+  }
+
+  showMessage(msg: string, type: 'success' | 'error'): void {
+    this.message = msg;
+    this.messageType = type;
+    setTimeout(() => {
+      this.message = '';
+    }, 3000);
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-PE', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   }
 }

@@ -1,1 +1,121 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>Administrar Landings</h1>
+      <button class="btn-create" (click)="createLanding()">
+        <span class="icon">+</span>
+        Crear Landing
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert Messages -->
+  <div class="alert" *ngIf="message" [ngClass]="messageType">
+    {{ message }}
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loading && landings.length === 0">
+    <div class="spinner"></div>
+    <p>Cargando landings...</p>
+  </div>
+
+  <!-- Table Container -->
+  <div class="table-container" *ngIf="!loading || landings.length > 0">
+    <table class="landings-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let landing of landings" [class.inactive]="!landing.is_active">
+          <td class="td-id">{{ landing.id }}</td>
+          <td class="td-nombre">
+            <div class="nombre-cell">
+              <span class="empresa-name">{{ landing.nombre_empresa }}</span>
+              <span class="status-badge" [class.active]="landing.is_active">
+                {{ landing.is_active ? 'Activa' : 'Inactiva' }}
+              </span>
+            </div>
+          </td>
+          <td class="td-descripcion">
+            <div class="descripcion-cell">
+              <p class="title">{{ landing.title }}</p>
+              <div class="contact-info">
+                <span *ngIf="landing.correo_contacto" class="info-item">
+                  <i class="icon-email">✉</i>
+                  {{ landing.correo_contacto }}
+                </span>
+                <span *ngIf="landing.telefono_contacto" class="info-item">
+                  <i class="icon-phone">📞</i>
+                  {{ landing.telefono_contacto }}
+                </span>
+              </div>
+            </div>
+          </td>
+          <td class="td-actions">
+            <div class="actions-group">
+              <button 
+                class="btn-action btn-edit" 
+                (click)="editLanding(landing.id)"
+                title="Editar">
+                Editar
+              </button>
+              <button 
+                class="btn-action btn-preview" 
+                (click)="viewLanding(landing.id)"
+                title="Vista Previa">
+                Vista Previa
+              </button>
+              <button 
+                class="btn-action btn-delete" 
+                (click)="confirmDelete(landing)"
+                title="Eliminar">
+                🗑
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="landings.length === 0 && !loading">
+          <td colspan="4" class="empty-state">
+            <div class="empty-content">
+              <span class="empty-icon">📄</span>
+              <p>No hay landings creadas</p>
+              <button class="btn-create-empty" (click)="createLanding()">
+                Crear primera landing
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Confirmar Eliminación</h2>
+        <button class="btn-close" (click)="cancelDelete()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>¿Estás seguro de que deseas eliminar la landing?</p>
+        <p class="landing-name" *ngIf="landingToDelete">
+          <strong>{{ landingToDelete.nombre_empresa }}</strong>
+        </p>
+        <p class="warning-text">Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="cancelDelete()">Cancelar</button>
+        <button class="btn-confirm-delete" (click)="deleteLanding()" [disabled]="loading">
+          {{ loading ? 'Eliminando...' : 'Eliminar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
