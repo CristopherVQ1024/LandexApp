@@ -17,13 +17,23 @@ export class DashboardComponent implements OnInit {
   userName: string = '';
   userEmail: string = '';
   userPhoto: string = '';
+  userRole: string = '';
 
   ngOnInit() {
-    const user = this.authService.getCurrentUser();
-    if (user) {
-      this.userName = user.displayName || 'Usuario';
-      this.userEmail = user.email || '';
-      this.userPhoto = user.photoURL || '';
+    const userData = this.authService.getUserData();
+
+    if (userData) {
+      this.userName = userData.name || 'Usuario';
+      this.userEmail = userData.email || '';
+      this.userPhoto = userData.picture || '';
+      this.userRole = userData.role || 'admin';
+    } else {
+      const user = this.authService.getCurrentUser();
+      if (user) {
+        this.userName = user.displayName || 'Usuario';
+        this.userEmail = user.email || '';
+        this.userPhoto = user.photoURL || '';
+      }
     }
   }
 

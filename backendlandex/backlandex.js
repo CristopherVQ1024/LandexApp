@@ -1,12 +1,14 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const { Pool } = require('pg');
 const fs = require('fs');
+const jwt = require('jsonwebtoken');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Configuración de PostgreSQL
 const pool = new Pool({
@@ -56,6 +58,159 @@ app.use(express.urlencoded({ extended: true }));
 
 // Servir archivos estáticos de la carpeta uploads
 app.use('/uploads', express.static(uploadsDir));
+
+// ==================== RUTAS ====================
+
+// Ruta de login/registro con Google
+app.post('/api/auth/google', async (req, res) => {
+  try {
+    const { google_id, name, email, picture } = req.body;
+
+    // Validar datos requeridos
+    if (!google_id || !email) {
+      return res.status(400).json({ 
+        error: 'Faltan datos requeridos (google_id, email)' 
+      });
+    }
+
+    // Verificar si el usuario ya existe
+    const checkQuery = 'SELECT * FROM admins WHERE google_id = $1 OR email = $2';
+    const checkResult = await pool.query(checkQuery, [google_id, email]);
+
+    let user;
+
+    if (checkResult.rows.length > 0) {
+      // Usuario existe - Actualizar información
+      user = checkResult.rows[0];
+      
+      const updateQuery = `
+        UPDATE admins 
+        SET name = $1, picture = $2, updated_at = CURRENT_TIMESTAMP 
+        WHERE id = $3 
+        RETURNING *
+      `;
+      const updateResult = await pool.query(updateQuery, [name, picture, user.id]);
+      user = updateResult.rows[0];
+
+      console.log('✅ Usuario actualizado:', user.email);
+    } else {
+      // Usuario nuevo - Registrar
+      const insertQuery = `
+        INSERT INTO admins (google_id, name, email, picture, role, status) 
+        VALUES ($1, $2, $3, $4, 'admin', '1') 
+        RETURNING *
+      `;
+      const insertResult = await pool.query(insertQuery, [google_id, name, email, picture]);
+      user = insertResult.rows[0];
+
+      console.log('✅ Nuevo usuario registrado:', user.email);
+    }
+
+    // Generar JWT token
+    const token = jwt.sign(
+      { 
+        id: user.id, 
+        email: user.email, 
+        role: user.role 
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    // Responder con datos del usuario y token
+    res.json({
+      success: true,
+      message: checkResult.rows.length > 0 ? 'Login exitoso' : 'Registro exitoso',
+      user: {
+        id: user.id,
+        google_id: user.google_id,
+        name: user.name,
+        email: user.email,
+        picture: user.picture,
+        role: user.role,
+        status: user.status
+      },
+      token
+    });
+
+  } catch (error) {
+    console.error('❌ Error en /api/auth/google:', error);
+    res.status(500).json({ 
+      error: 'Error en el servidor',
+      details: error.message 
+    });
+  }
+});
+
+// Ruta para verificar token (middleware de autenticación)
+app.get('/api/auth/verify', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ error: 'Token no proporcionado' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    // Buscar usuario en la base de datos
+    const query = 'SELECT id, google_id, name, email, picture, role, status FROM admins WHERE id = $1';
+    const result = await pool.query(query, [decoded.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const user = result.rows[0];
+
+    // Verificar si el usuario está activo
+    if (user.status !== '1') {
+      return res.status(403).json({ error: 'Usuario inactivo' });
+    }
+
+    res.json({
+      success: true,
+      user
+    });
+
+  } catch (error) {
+    console.error('❌ Error verificando token:', error);
+    res.status(401).json({ 
+      error: 'Token inválido',
+      details: error.message 
+    });
+  }
+});
+
+// Ruta para obtener perfil del usuario
+app.get('/api/user/profile', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ error: 'Token no proporcionado' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    const query = 'SELECT id, google_id, name, email, picture, role, status, created_at FROM admins WHERE id = $1';
+    const result = await pool.query(query, [decoded.id]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json({
+      success: true,
+      user: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('❌ Error obteniendo perfil:', error);
+    res.status(401).json({ error: 'Token inválido' });
+  }
+});
+
 
 // ============= RUTAS DE LANDINGS =============
 
