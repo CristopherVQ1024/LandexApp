@@ -61,7 +61,7 @@ export class DashboardComponent implements OnInit {
 
   viewLanding(id: number): void {
     // Abrir en nueva pestaña la vista previa
-    window.open(`http://localhost:4200/preview/${id}`, '_blank');
+    window.open(`http://localhost:4000/preview/${id}`, '_blank');
   }
 
   confirmDelete(landing: LandingListItem): void {
