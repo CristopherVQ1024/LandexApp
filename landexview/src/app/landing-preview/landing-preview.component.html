@@ -68,7 +68,6 @@
         <button class="btn-primary" [style.background]="landing.main_color" (click)="scrollTo('contacto')">
           Contáctanos
         </button>
-        <button class="btn-secondary" (click)="scrollTo('descripcion')">Saber Más</button>
       </div>
     </div>
   </section>
@@ -162,7 +161,6 @@
             <p>{{ producto.descripcion || 'Descripción del producto' }}</p>
             <div class="producto-footer">
               <div class="producto-precio">S/ {{ producto.precio || '0.00' }}</div>
-              <button class="btn-buy" [style.background]="landing.main_color">Comprar</button>
             </div>
           </div>
         </div>
@@ -183,7 +181,6 @@
       <div class="testimonios-grid">
         <div *ngFor="let testimonio of landing.testimonios_json" class="testimonio-card">
           <div class="testimonio-content">
-            <div class="quote-icon" [style.color]="landing.main_color">"</div>
             <p class="testimonio-comentario">{{ testimonio.comentario || 'Excelente servicio y atención al cliente.' }}</p>
           </div>
           <div class="testimonio-header">
@@ -337,7 +334,6 @@
         </iframe>
       </div>
       <div class="mapa-info">
-        <p><strong>Coordenadas:</strong> {{ landing.mapa_lat }}, {{ landing.mapa_lng }}</p>
         <a [href]="getGoogleMapsLink(landing.mapa_lat, landing.mapa_lng)" 
            target="_blank" 
            class="btn-map"
