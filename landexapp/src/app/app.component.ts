@@ -32,12 +32,15 @@ export class AppComponent implements OnInit {
 
   checkAuth() {
     this.isAuthenticated = this.authService.isAuthenticated();
-    
+
     if (this.isAuthenticated) {
       const userData = this.authService.getUserData();
       if (userData) {
         this.userName = userData.name || 'Usuario';
-        this.userPhoto = userData.picture || '';
+        this.userPhoto = userData.picture
+          ? `${userData.picture}?sz=200`
+          : '';
+          console.log("Foto:", this.userPhoto);
       }
     }
   }

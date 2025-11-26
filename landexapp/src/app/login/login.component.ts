@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -16,6 +16,20 @@ export class LoginComponent {
 
   errorMessage: string = '';
   loading: boolean = false;
+  isMobile = false;
+  
+  ngOnInit(): void {
+    this.checkScreenSize();
+  }
+  
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.checkScreenSize();
+  }
+
+  checkScreenSize() {
+    this.isMobile = window.innerWidth <= 768;
+  }
 
   async loginWithGoogle(): Promise<void> {
     this.loading = true;

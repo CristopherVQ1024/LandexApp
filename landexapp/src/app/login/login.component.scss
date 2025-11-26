@@ -1,90 +1,239 @@
+// Versión Desktop
 .login-container {
   display: flex;
+  width: 100%;
+  height: 100vh;
+  background-color: white;
+  overflow: hidden;
+}
+
+.login-left {
+  flex: 1;
+  background-color: #000842;
+  color: white;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  padding: 40px;
+  position: relative;
 }
 
-.login-card {
-  background: white;
-  padding: 50px 40px;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-}
-
-.logo-section {
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   margin-bottom: 40px;
 }
 
-.logo-section h1 {
-  color: #333;
+.logo {
+  width: 140px;
+  height: 180px;
+  margin-bottom: 25px;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.logo-text {
   font-size: 32px;
-  margin-bottom: 10px;
   font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
 }
 
-.logo-section p {
-  color: #666;
-  font-size: 16px;
-  margin: 0;
+.phone-number {
+  position: absolute;
+  bottom: 30px;
+  font-size: 18px;
+  font-weight: 500;
 }
 
-.error-message {
-  background-color: #fee;
-  color: #c33;
-  padding: 12px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
-}
-
-.google-btn {
+.login-right {
+  flex: 1;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  gap: 12px;
+  align-items: center;
+  padding: 40px;
+}
+
+.login-form {
   width: 100%;
-  padding: 14px 24px;
-  background: white;
-  color: #444;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
+  max-width: 320px;
+  text-align: center;
+}
+
+.login-title {
+  font-size: 38px;
   font-weight: 600;
+  margin-bottom: 40px;
+  color: #000842;
+}
+
+.google-login-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
+  margin-bottom: 30px;
 
-.google-btn:hover:not(:disabled) {
-  background: #f8f9fa;
-  border-color: #4285f4;
-  box-shadow: 0 4px 12px rgba(66, 133, 244, 0.2);
-  transform: translateY(-2px);
-}
-
-.google-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
+  &:hover {
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
 }
 
 .google-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
 }
 
-@media (max-width: 480px) {
-  .login-card {
-    padding: 40px 30px;
+.support-link {
+  text-align: center;
+  margin-top: 30px;
+  font-size: 18px;
+  color: #666;
+
+  a {
+    color: #000842;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
-  
-  .logo-section h1 {
-    font-size: 28px;
+}
+
+// Versión Mobile
+.mobile-login-container {
+  width: 100vw; 
+  height: 100vh;
+  background-color: #000842;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box; 
+  overflow: hidden;
+  position: fixed; 
+  top: 0;
+  left: 0;
+}
+
+.mobile-login-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  width: 100%;
+  max-width: 320px;
+  box-sizing: border-box; // También aquí para ser consistentes
+}
+
+.mobile-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 40px;
+}
+
+.mobile-logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 50px;
+}
+
+.mobile-logo {
+  width: 100px;
+  height: 140px;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
+}
+
+.mobile-logo-text {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: white;
+}
+
+.mobile-google-login-btn {
+  width: 100%;
+  padding: 16px;
+  background-color: white;
+  border: none;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+
+  &:active {
+    transform: scale(0.98);
+    background-color: #f0f0f0;
+  }
+}
+
+.mobile-support-link {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+
+  a {
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:active {
+      text-decoration: underline;
+    }
+  }
+}
+
+.mobile-phone-number {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 20px;
+}
+
+// Media Queries
+@media (max-width: 768px) {
+  .login-container {
+    display: none;
+  }
+
+  .mobile-login-container {
+    display: flex;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-login-container {
+    display: none;
+  }
+
+  .login-container {
+    display: flex;
   }
 }

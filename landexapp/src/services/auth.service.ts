@@ -74,8 +74,7 @@ export class AuthService {
   async logout(): Promise<void> {
     try {
       await signOut(this.auth);
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user_data');
+      localStorage.clear();
     } catch (error) {
       throw this.handleError(error);
     }
